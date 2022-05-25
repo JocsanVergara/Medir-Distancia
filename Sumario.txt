@@ -1,0 +1,2 @@
+24/05/2022 -Se instalo la libreria pyserial
+24/05/2022 -Se logro encontrar la dirección del puerto COM para el u-blox -> D200C017A

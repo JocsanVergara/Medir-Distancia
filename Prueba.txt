@@ -1,3 +1,0 @@
-Esta es la segunda prueba
-Veamos como funciona
-Que pasa si tenemos un cierre del programa y quieres hacer algo nuevamente
