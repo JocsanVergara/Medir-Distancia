@@ -9,3 +9,15 @@ for port in serial.tools.list_ports.comports():
     #print(port.name)
     #print(port.description) 
 print(Puerto_COM)
+
+#Abrimos el puerto para poder obtener los datos
+U_Blox = serial.Serial(str(Puerto_COM),115200, timeout=2, write_timeout=1)
+
+try:
+    while(True):
+        dato = U_Blox.readline()
+        dato = dato.decode('utf-8')
+        print(dato)
+except KeyboardInterrupt:
+    U_Blox.close()
+    print("Fin de la recolección de datos")
