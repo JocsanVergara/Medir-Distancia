@@ -1,30 +1,43 @@
+# Revisamos la gráfica de los datos entregados y hacemos uso de programación en paralelo
+
 import serial
-import serial.tools.list_ports
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import threading 
+import numpy as np
 
+gData = []
+gData.append([0.0])
+gData.append([0.0])
 
-# Buscamos obtener la dirección del puerto COM donde se conecto el segundo u-Blox
-for port in serial.tools.list_ports.comports():
-    if 'PID=0403:6015 SER=D200BZVHA' in str(port.hwid):
-        Puerto_COM_2 = port.name
-        print(port.hwid)
-        print(port.name)
-        print(port.description) 
-        print(Puerto_COM_2)
-        U_Blox = serial.Serial(str(Puerto_COM_2),115200, timeout=2, write_timeout=1)    
+def getData(out_data):
+    with serial.Serial("\\.\COM4",115200) as ser:
+        while True:
+            line = ser.readline().decode('utf-8')
+            try:
+                out_data[1].append(float(line))
+                if len(out_data[1]) > 200:
+                    out_data[1].pop(0)
+            except:
+                pass
 
-try:
-    while(True):
-        
-        dato = U_Blox.readline()
-        dato_string = dato.decode('utf-8')
-        #dato_string = dato
-        #dato_string = ''.join([str(item) for item in dato])
-        print("Conversion de lista a string \n")
-        print(dato_string)
+dataCollector = threading.Thread(target = getData, args = (gData,))
+dataCollector.start()
 
+def update_line(num, h1, data):
+    dx = np.array (range(len(data[1])))
+    dy = np.array(data[1])
+    h1.set_data(dx, dy)
+    return h1,
 
-        
+fig = plt.figure(figsize=0)
+plt.ylim(-1.5,1.5)
+plt.xlim(0,200)
+h1, = plt.plot(gData[0], gData[1])
 
-except KeyboardInterrupt:
-    U_Blox.close()
-    print("Fin de la recolección de datos")
+line_ani = animation.FuncAnimation(fig, update_line, fargs = (h1, gData),interval=50,blit=False)
+
+plt.show()
+dataCollector.join()
+
+print(gData)

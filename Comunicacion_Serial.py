@@ -33,14 +33,14 @@ try:
         #Antena 1
         dato = U_Blox.readline()
         dato_string = dato.decode('utf-8')
-        print("Antena 1 \n")
-        print(dato_string)
+        # print("Antena 1 \n")
+        # print(dato_string)
 
         #Antena 2
         dato_2 = U_Blox_2.readline()
         dato_string_2 = dato_2.decode('utf-8')
-        print("Antena_2 \n")
-        print(dato_string_2)
+        # print("Antena_2 \n")
+        # print(dato_string_2)
 
         #Antena 1
         #target 1
@@ -73,23 +73,23 @@ try:
             #Dato completo antes de dividir
             print(x_1) 
             #Valor numerico 
-            print("RSSI_1p:",RSSI_1p_1)
-            print("Azimuth_angle:",Azimuth_angle_1)
-            print("Elevation_angle:",Elevation_angle_1)
-            print("RSSI_2p:",RSSI_2p_1)
-            print("Adv_Channel:",Adv_Channel_1)
-            print("target identificado",target_1)
+            # print("RSSI_1p:",RSSI_1p_1)
+            # print("Azimuth_angle:",Azimuth_angle_1)
+            # print("Elevation_angle:",Elevation_angle_1)
+            # print("RSSI_2p:",RSSI_2p_1)
+            # print("Adv_Channel:",Adv_Channel_1)
+            # print("target identificado",target_1)
 
             #Antena 2
             #Dato completo antes de dividir
             print(x_2) 
             #Valor numerico 
-            print("RSSI_1p:",RSSI_1p_2)
-            print("Azimuth_angle:",Azimuth_angle_2)
-            print("Elevation_angle:",Elevation_angle_2)
-            print("RSSI_2p:",RSSI_2p_2)
-            print("Adv_Channel:",Adv_Channel_2)
-            print("target identificado",target_2)
+            # print("RSSI_1p:",RSSI_1p_2)
+            # print("Azimuth_angle:",Azimuth_angle_2)
+            # print("Elevation_angle:",Elevation_angle_2)
+            # print("RSSI_2p:",RSSI_2p_2)
+            # print("Adv_Channel:",Adv_Channel_2)
+            # print("target identificado",target_2)
 
 #Comenzamos con el tema de los calculos
 #Calculos en el eje horizontal
@@ -97,12 +97,12 @@ try:
             d_BA_h = d_BC_h * sin(Azimuth_angle_2)/sin(180-Elevation_angle_2-Elevation_angle_1) #Distancia entre la antena 1 (B) y el objetivo (A)
             d_CA_h = d_BC_h * sin(Azimuth_angle_1)/sin(180-Elevation_angle_2-Elevation_angle_1) #Distancia entre la antena 2 (C) y el objetivo (A)
             l_h = d_BC_h * (sin(Azimuth_angle_1)*sin(Azimuth_angle_2))/(sin(Azimuth_angle_1+Azimuth_angle_2))
-
+            
+            print("Angulo antena 1: ",Azimuth_angle_1 + 90," Angulo antena 2: ",Azimuth_angle_2 + 90)
 #A los angulos debes sumarle 90° y multiplicarlo por -1 así debería funcionar bien
-
-
 
 
 except KeyboardInterrupt:
     U_Blox.close()
+    U_Blox_2.close()
     print("Fin de la recolección de datos")
