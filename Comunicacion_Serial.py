@@ -1,108 +1,168 @@
-from cmath import sin
 import serial
 import serial.tools.list_ports
+import threading
+import signal
 
+exit_event = threading.Event()
+mean_1 = 0
+mean_2 = 0
+
+def find_port(identf):
+    """
+        Esta función busca determinar el puerto serial que vamos a utilizar,
+        se ingresa el identificador y si lo encuentra nos devuelve el nombre 
+        del puerto al que esta conectado, de no ser así devuelve un 0. 
+    """
+    for port in serial.tools.list_ports.comports():
+        if identf in str(port.hwid):
+            return port.name
+
+#Nombre de las antenas y los tag
+ant_1 = 'PID=0403:6015 SER=D200C017A'
+ant_2 = 'PID=0403:6015 SER=D200BZVHA'
+tag_1 = ":CCF957966AC9"
+
+#Revisión de la correcta conexión de las antenas
+#print(find_port(ant_2))
+#print(find_port(ant_1))
+
+#Arreglo donde guardaremos los datos
+gData_1 = []
+gData_1.append([0.0])
+gData_2 = []
+gData_2.append([0.0])
+
+#Abriendo los puertos
 try:
-
-    # Buscamos obtener la dirección del puerto COM donde se conecto el primer u-Blox
-    for port in serial.tools.list_ports.comports():
-        if 'PID=0403:6015 SER=D200C017A' in str(port.hwid):
-            Puerto_COM = port.name
-            #print(port.hwid)
-            #print(port.name)
-            #print(port.description) 
-            print(Puerto_COM)
-            #Abrimos el puerto para poder obtener los datos
-            U_Blox = serial.Serial(str(Puerto_COM),115200, timeout=2, write_timeout=1)
-
-    # Buscamos obtener la dirección del puerto COM donde se conecto el segundo u-Blox
-    for port in serial.tools.list_ports.comports():
-        if 'PID=0403:6015 SER=D200BZVHA' in str(port.hwid):
-            Puerto_COM_2 = port.name
-            #print(port.hwid)
-            #print(port.name)
-            #print(port.description) 
-            print(Puerto_COM_2)
-            U_Blox_2 = serial.Serial(str(Puerto_COM_2),115200, timeout=2, write_timeout=1)    
+    U_Blox_1 = serial.Serial(str(find_port(ant_1)),115200,timeout=2,write_timeout=1)
+    U_Blox_2 = serial.Serial(str(find_port(ant_2)),115200,timeout=2,write_timeout=1)
 except:
-    print('No se pudo establecer la comunicación serial, revise la conexión y intentelo nuevamente')
+    U_Blox_1 = 0
+    U_Blox_2 = 0
 
-try:
-    while(True):
-        
-        #Antena 1
-        dato = U_Blox.readline()
-        dato_string = dato.decode('utf-8')
-        # print("Antena 1 \n")
-        # print(dato_string)
+print(U_Blox_1)
+print(U_Blox_2)
 
-        #Antena 2
-        dato_2 = U_Blox_2.readline()
-        dato_string_2 = dato_2.decode('utf-8')
-        # print("Antena_2 \n")
-        # print(dato_string_2)
+def CalculoAngulo(ang_1,ang_2):
+    """
+        Calculamos ambos ángulo formado entre las dos antenas y el tag
+    """
+    Alfa = 0.0
+    Beta = 0.0
+    if ang_1 > 0.0:
+        #Caso 1: Ángulo 1 positivo y Ángulo 2 negativo
+        if ang_2 < 0.0:
+            Alfa = 90.0 - ang_1
+            Beta = 90.0 + ang_2
+            return Alfa,Beta
+        #Caso 2:
+        elif ang_2 > 0.0:
+            Alfa = 90.0 - ang_1
+            Beta = 90.0 - ang_2
+            return Alfa,Beta
+        #Caso 3:    
+        elif ang_2 == 0.0:
+            Alfa = 90.0 - ang_1
+            Beta = 90.0
+            return Alfa,Beta 
+    #caso 4:
+    elif ang_1 < 0.0:
+        if ang_2 < 0.0:
+            Alfa = 90.0 + ang_1
+            Beta = 90.0 + ang_2
+            return Alfa,Beta
+    #Caso 5:
+    elif ang_1 == 0.0:
+        if ang_2 < 0.0:
+            Alfa = 90.0
+            Beta = 90.0 + ang_2
+            return Alfa,Beta
+    
 
-        #Antena 1
-        #target 1
-        if ":CCF957966AC9" in dato_string:
-        #Separamos los datos entregados por el U-Blox
-            x_1 = dato_string.split(",")
-        #Convierto los valores numeros a enteros   
-            RSSI_1p_1 = int(x_1[1])
-            Azimuth_angle_1 = int(x_1[2])
-            Elevation_angle_1 = int(x_1[3])
-            RSSI_2p_1 = int(x_1[4])
-            Adv_Channel_1 = int(x_1[5])
-            target_1 = x_1[6]
-        
-        #Antena 2
-        #target 2
-        if ":CCF957966AC9" in dato_string_2:
-        #Separamos los datos entregados por el U-Blox
-            x_2 = dato_string_2.split(",")
-        #Convierto los valores numeros a enteros   
-            RSSI_1p_2 = int(x_2[1])
-            Azimuth_angle_2 = int(x_2[2])
-            Elevation_angle_2 = int(x_2[3])
-            RSSI_2p_2 = int(x_2[4])
-            Adv_Channel_2 = int(x_2[5])
-            target_2 = x_2[6]
-        
-        #Vemos los datos
-            #Antena 1
-            #Dato completo antes de dividir
-            print(x_1) 
-            #Valor numerico 
-            # print("RSSI_1p:",RSSI_1p_1)
-            # print("Azimuth_angle:",Azimuth_angle_1)
-            # print("Elevation_angle:",Elevation_angle_1)
-            # print("RSSI_2p:",RSSI_2p_1)
-            # print("Adv_Channel:",Adv_Channel_1)
-            # print("target identificado",target_1)
+def getData(U_Blox,out_data_Ang,tag,ant):
+    """
+        Recogemos del puerto serial las cadenas de caracteres para
+        su posterior tratamiento, de momento solo estamos entregando
+        el dato de ángulo de azimuth (Ángulo en la horizontal)
+    """
+    global mean_1
+    global mean_2
+    while True:
+        line = U_Blox.readline().decode('utf-8')
+        try:
+            if tag in line:
+                x = line.split(",")
+                RSSI_1p = int(x[1])
+                Azimuth_angle = int(x[2])
+                Elevation_angle = int(x[3])
+                RSSI_2p = int(x[4])
+                Adv_Channel = int(x[5])
+                target = x[6]
+                #print(target)
+                out_data_Ang[0].append(Azimuth_angle)
+                if len(out_data_Ang[0]) > 15:
+                    if ant == ant_1:
+                        mean_1 = sum(out_data_Ang[0])/len(out_data_Ang[0])
+                    if ant == ant_2:
+                        mean_2 = sum(out_data_Ang[0])/len(out_data_Ang[0])
+                    out_data_Ang[0].pop(0)
+            #elif not tag in line:
+            #    print("revisar si el tag está con bateria")
+            #    print("tag no reconocido:",tag)
+        except:
+            print("Existe un error comunicate con Jocsan y espera lo mejor u.u")
+            pass
 
-            #Antena 2
-            #Dato completo antes de dividir
-            print(x_2) 
-            #Valor numerico 
-            # print("RSSI_1p:",RSSI_1p_2)
-            # print("Azimuth_angle:",Azimuth_angle_2)
-            # print("Elevation_angle:",Elevation_angle_2)
-            # print("RSSI_2p:",RSSI_2p_2)
-            # print("Adv_Channel:",Adv_Channel_2)
-            # print("target identificado",target_2)
+def signal_handler(signum, frame):
+    exit_event.set()
 
-#Comenzamos con el tema de los calculos
-#Calculos en el eje horizontal
-            d_BC_h = 100 #cm        #Distancia desde la antena 1 (B) a la antena 2 (C)
-            d_BA_h = d_BC_h * sin(Azimuth_angle_2)/sin(180-Elevation_angle_2-Elevation_angle_1) #Distancia entre la antena 1 (B) y el objetivo (A)
-            d_CA_h = d_BC_h * sin(Azimuth_angle_1)/sin(180-Elevation_angle_2-Elevation_angle_1) #Distancia entre la antena 2 (C) y el objetivo (A)
-            l_h = d_BC_h * (sin(Azimuth_angle_1)*sin(Azimuth_angle_2))/(sin(Azimuth_angle_1+Azimuth_angle_2))
-            
-            print("Angulo antena 1: ",Azimuth_angle_1 + 90," Angulo antena 2: ",Azimuth_angle_2 + 90)
-#A los angulos debes sumarle 90° y multiplicarlo por -1 así debería funcionar bien
+#Condición de conexión
+if not U_Blox_1 or not U_Blox_2:
+    Estado_Conexion = 0
+else:
+    Estado_Conexion = 1
+
+if Estado_Conexion:
+    dataCollector_1 = threading.Thread(target = getData, args = (U_Blox_1,gData_1,tag_1,ant_1))
+    dataCollector_2 = threading.Thread(target = getData, args = (U_Blox_2,gData_2,tag_1,ant_2))
+    dataCollector_1.start()
+    dataCollector_2.start()
+
+#signal.signal(signal.SIGINT, signal_handler)
+#dataCollector_1.join()
+#dataCollector_2.join()
+    #
+#while True:
+#    print(gData_1)
+#    if not KeyboardInterrupt:
+#        U_Blox_1.close()
+#        U_Blox_2.close()
+#        print("Fin de la recolección de datos")
+else:
+    print("No se pudo establecer conexión exitosamente, prueba nuevamente")
 
 
+
+try:    
+    while Estado_Conexion: #not exit_event.is_set():
+        #print("data antena 1")
+        #print(gData_1)
+        #print("data antena 2")
+        #print(gData_2)
+        x = CalculoAngulo(mean_1,mean_2)
+        print("Promedio de los datos obtenidos en la antena 1: ",mean_1,type(mean_1))
+        print("Alfa:",x)
+        print("Promedio de los datos obtenidos en la antena 2: ",mean_2,type(mean_2))
+        print("Beta:",type(x))
+        #print(gData_2[1])
+        #print("Alfa")
+        #print(gData_1[0][1])
+        #print("Beta")
+        #print(gData_1)
 except KeyboardInterrupt:
-    U_Blox.close()
+    pass        
+
+if Estado_Conexion:
+    U_Blox_1.close()
     U_Blox_2.close()
-    print("Fin de la recolección de datos")
+print("Fin de la recolección de datos")
