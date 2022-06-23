@@ -1,7 +1,9 @@
 import serial
 import serial.tools.list_ports
 import threading
-import signal
+import math
+
+#import signal  #Se suponía quería que la comunicación serial fuera silenciosa al finalizar el programa
 
 exit_event = threading.Event()
 mean_1 = 0
@@ -40,8 +42,9 @@ except:
     U_Blox_1 = 0
     U_Blox_2 = 0
 
-print(U_Blox_1)
-print(U_Blox_2)
+#Prueba de conexión con los puertos seriales
+#print(U_Blox_1)
+#print(U_Blox_2)
 
 def CalculoAngulo(ang_1,ang_2):
     """
@@ -58,7 +61,7 @@ def CalculoAngulo(ang_1,ang_2):
         #Caso 2:
         elif ang_2 > 0.0:
             Alfa = 90.0 - ang_1
-            Beta = 90.0 - ang_2
+            Beta = 90.0 + ang_2
             return Alfa,Beta
         #Caso 3:    
         elif ang_2 == 0.0:
@@ -68,7 +71,7 @@ def CalculoAngulo(ang_1,ang_2):
     #caso 4:
     elif ang_1 < 0.0:
         if ang_2 < 0.0:
-            Alfa = 90.0 + ang_1
+            Alfa = 90.0 - ang_1
             Beta = 90.0 + ang_2
             return Alfa,Beta
     #Caso 5:
@@ -78,7 +81,6 @@ def CalculoAngulo(ang_1,ang_2):
             Beta = 90.0 + ang_2
             return Alfa,Beta
     
-
 def getData(U_Blox,out_data_Ang,tag,ant):
     """
         Recogemos del puerto serial las cadenas de caracteres para
@@ -131,34 +133,42 @@ if Estado_Conexion:
 #signal.signal(signal.SIGINT, signal_handler)
 #dataCollector_1.join()
 #dataCollector_2.join()
-    #
-#while True:
-#    print(gData_1)
-#    if not KeyboardInterrupt:
-#        U_Blox_1.close()
-#        U_Blox_2.close()
-#        print("Fin de la recolección de datos")
+
 else:
     print("No se pudo establecer conexión exitosamente, prueba nuevamente")
 
-
-
 try:    
-    while Estado_Conexion: #not exit_event.is_set():
+    while Estado_Conexion: 
         #print("data antena 1")
         #print(gData_1)
         #print("data antena 2")
         #print(gData_2)
+        x = (0.0,0.0)
+        print("Alfa",x[0])
+        print("Beta",x[1])
+        print("Beta:",type(x))
         x = CalculoAngulo(mean_1,mean_2)
         print("Promedio de los datos obtenidos en la antena 1: ",mean_1,type(mean_1))
         print("Alfa:",x)
+        #
+        try:
+            print("Alfa",x[0])
+            print("Beta",x[1])
+            #Distancia desde el punto C a A
+            #con a definido como la distancia entre las dos antenas
+            a = 75 #cm
+            b = a * math.sin(x[0])/math.sin(180-x[1]-x[0]) # b=a*sin(beta)/sin(sigma)
+            c = a * math.sin(x[1])/math.sin(180-x[1]-x[0]) # c=a*sin(alfa)/sin(sigma)
+            l = a * (math.sin(x[0])*math.sin(x[1])) / math.sin(x[0]+x[1])
+            print("La distancia desde la antena '2' al tag es:",b,"[cm]")
+            print("La distancia desde la antena '1' al tag es:",c,"[cm]")
+            print("la altura del triangulo h es:",l,"[cm]")
+            
+        except:
+            pass
+        #
         print("Promedio de los datos obtenidos en la antena 2: ",mean_2,type(mean_2))
         print("Beta:",type(x))
-        #print(gData_2[1])
-        #print("Alfa")
-        #print(gData_1[0][1])
-        #print("Beta")
-        #print(gData_1)
 except KeyboardInterrupt:
     pass        
 
