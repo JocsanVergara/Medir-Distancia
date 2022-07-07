@@ -83,20 +83,6 @@ def CalculoAngulo(ang_1,ang_2):
             Beta = 90.0 + ang_2
             return Alfa,Beta
 
-def CSV_document(new):
-    #Los datos anteriores almacenados en un CSV
-            File = open('example.csv','r')
-            reader = File.readlines()
-            File.close()
-
-            File = open ('example.csv','w')
-            File.writelines(reader)
-            #csv.writer(File).writerow(reader)
-            csv.writer(File,delimiter=';').writerow(new)
-            File.close()
-
-
-
 def getData(U_Blox,out_data_Ang,tag,ant):
     """
         Recogemos del puerto serial las cadenas de caracteres para
