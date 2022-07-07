@@ -82,21 +82,7 @@ def CalculoAngulo(ang_1,ang_2):
             Alfa = 90.0
             Beta = 90.0 + ang_2
             return Alfa,Beta
-
-def CSV_document(new):
-    #Los datos anteriores almacenados en un CSV
-            File = open('example.csv','r')
-            reader = File.readlines()
-            File.close()
-
-            File = open ('example.csv','w')
-            File.writelines(reader)
-            #csv.writer(File).writerow(reader)
-            csv.writer(File,delimiter=';').writerow(new)
-            File.close()
-
-
-
+    
 def getData(U_Blox,out_data_Ang,tag,ant):
     """
         Recogemos del puerto serial las cadenas de caracteres para
@@ -118,7 +104,7 @@ def getData(U_Blox,out_data_Ang,tag,ant):
                 target = x[6]
                 #print(target)
                 out_data_Ang[0].append(Azimuth_angle)
-                if len(out_data_Ang[0]) > 15:
+                if len(out_data_Ang[0]) > 2:
                     if ant == ant_1:
                         mean_1 = sum(out_data_Ang[0])/len(out_data_Ang[0])
                     if ant == ant_2:
@@ -152,6 +138,7 @@ if Estado_Conexion:
 
 else:
     print("No se pudo establecer conexión exitosamente, prueba nuevamente")
+
 count = 0
 
 try:    
@@ -176,13 +163,12 @@ try:
             a = 70 #cm
             b = a * math.sin(x[0])/math.sin(180-x[1]-x[0]) # b=a*sin(beta)/sin(sigma)
             c = a * math.sin(x[1])/math.sin(180-x[1]-x[0]) # c=a*sin(alfa)/sin(sigma)
-            l = a * (math.sin(x[0])*math.sin(x[1])) / math.sin(x[0]+x[1])      
-
+            l = a * (math.sin(x[0])*math.sin(x[1])) / math.sin(x[0]+x[1])
+            
+            
             new = [x[0],x[1],[a],[c],[b]]
             count = count + 1
 
-            #dataCollector_1.join()
-            #dataCollector_2.join()
             #Los datos anteriores almacenados en un CSV
             File = open('example.csv','r')
             reader = File.readlines()
@@ -193,10 +179,9 @@ try:
             #csv.writer(File).writerow(reader)
             csv.writer(File,delimiter=';').writerow(new)
             File.close()
-
+            
             time.sleep(0.1)
 
-            #datos que se imprimen en pantalla
             print("numero de vez que pasa por aquí",count)
             print("La distancia desde la antena '2' al tag es:",b,"[cm]")
             print("La distancia desde la antena '1' al tag es:",c,"[cm]")
@@ -208,6 +193,7 @@ try:
         print("Promedio de los datos obtenidos en la antena 2: ",mean_2,type(mean_2))
         print("Beta:",type(x))
 except KeyboardInterrupt:
+    File.close()
     pass        
 
 if Estado_Conexion:
